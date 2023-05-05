@@ -1,0 +1,226 @@
+---
+title: "Coursework Project-Fundamentals of Information Visualisation(COMP3021)"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Implementing Visualizations on a Dataset in R
+
+### Basic Description about the DataSet
+
+The Dataset that has been chosen by me for exploratory analysis and to implement Various Visualisation Techniques is called "SPOTIFY SONGS" which is a CSV file that contains a lot of music data along with its corresponding audio features data that can be used to classify, explore and visualize data extensively on the basis of exploratory data analysis and different kinds of visualization techniques.I will be making majority of my visualizations on pop music from this dataset.Spotify is a Swedish-based audio streaming and media services provider, which launched in October 2008. It is now one of the biggest digital music, podcast, and video streaming service in the world that gives access to millions of songs from artists all over the world.
+
+### Basic Description about the data dictionary
+
+Here are all the variable columns that are involved with a short description about them
+
+track_id: The unique identification alphanumeric assigned to every song
+
+track_name: Name of the track
+
+track_artist: Name of the artist
+
+track_popularity: A metric that shows how popular that track is .(100: Most Popular,0:Least Popular )
+
+track_album_id: The unique identification alphanumeric assigned to every album
+
+track_album_name: Name of the album
+
+track_album_release_date: Release date of the album
+
+playlist_name: Name of the playlist assigned to that song
+
+playlist_id:The unique identification alphanumeric assigned to every playlist
+
+playlist_genre: The genre of the playlist
+
+playlist_subgenre:The sub-genre of the playlist
+
+Danceability:Describes how suitable a track is for dancing by keeping in mind the rhythm and tempo of that song.(100: Most Danceable,0:Least Danceable )
+
+Valence: Describes how positive the track is from 1 to 0. Happier songs will have a valence closer to 1 and sadder songs will have a valence closer to 0.
+
+Acousticness: A measure to determine whether the track is acoustic or not.
+
+Key: Estimated overall key of the track. If no key was detected then its assigned -1, otherwise 0 = C, 1 = C/D, 2 = D and so on.
+
+Energy: How energetic the track is, measures the intensity and adrenaline of the track.Range of the values assigned will be from 0.0 to 1.0
+
+Loudness: The overall loudness of the track in decibels. The values range from -60 to 0.
+
+Speechiness: Describes the intensity of the spoken words in a track. Values range from 0 to 1 where values ranging from 0.66 to 1 describe that the song is entirely made u of spoken words. 0.33 to 0.66 describe a mixture of both music and spoken words.Less than 0.33 predominantly describes tracks that are purely musical and have very little spoken words
+
+Mode: The modality of a track. Major-1, Minor-0
+
+Instrumentalness: A measure to determine the intensity of the instrumentalness of a track.
+
+Liveness:Measure to determine the presence of a live studio audience in a track
+
+Tempo: The speed or the pace of the track. The higher the speed of the track, the higher is the tempo in BPM
+
+Song_Duration(in ms): Duration of the songs(in milliseconds)
+
+# Setting up and loading the data for preliminary data exploratory analysis
+
+Initially it is important to load the data into the rStudio and get a summary of the data we are dealing with extensively
+
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+spotify_songs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-21/spotify_songs.csv')
+summary(spotify_songs)
+
+```
+
+The data is successfully loaded up with all the column attributes showing their basic metrics such as minimum,maximum, mean etc..
+
+### Exploratory data analysis
+
+# Checking for missing values and how to deal with them successfully
+To check for the number of missing values(if any) in the dataset we will be using is.na() function and will use its result in the sum function as shown below.The is.na() is expected to return a dataset of values consisiting of boolean values of False and True and if a value is not available it will return "TRUE". We can also infer from this small value of mean that the percentage of missing values in our data is extremely low which is a desirable thing to have
+
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+sum(is.na(spotify_songs))
+mean(is.na(spotify_songs))
+```
+
+As we can clearly see that there are 15 missing values in our dataset and we can deal with these missing values with the help of the omit function which will return the dataset with the incomplete values removed as follows:
+
+na.omit(spotify_Songs)
+
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+na.omit(spotify_songs)
+
+```
+Now if we take a look at the song duration of the dataset it is given in milliseconds which is not a favourable way of measuring time so we can convert it into minutes and seconds which can be done as follows
+
+![THE SONG DURATION IN MILLISECONDS ](""C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\time(1).png"")
+
+![THE SONG DURATION IS HENCE CONVERTED TO MINS AND SECONDS FROM MS ](""C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\time.png"")
+
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+x<-spotify_songs$duration_ms<-(spotify_songs$duration_ms)/1000/60
+```
+
+After the conversion we can plot a histogram and see what we can infer from it
+
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+hist((x),main = "NUMBER OF SONGS AND THEIR RESPECTIVE SONG DURATIONS",xlab = "SONG DURATION",ylab = "NUMBER OF SONGS")
+```
+
+After plotting the histogram, we see it is slightly skewed at the left hand side. For the same histogram we can also derive the inference that most of the songs are 3-4 mins long as they are the ones with the most peaks. We can ask questions from this graph that why aren't songs generally more long.
+
+
+Next we can start to give an initial analysis towards having a fair idea about the metrics in a plotted format
+![DATA DISTRIBUTIONS OF AUDIO METRICS ](""C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\hist_mult.png"")
+
+
+
+From these histograms we can observe the following:
+1. Maximum songs have the instrumentalness of zero
+2. Most of the songs have a tempo ranging from upwards of 100 to 120
+3. Majority of the songs have energy values of more than atleast 0.5
+
+We will be making a boxplot that involves all genres plotted against a metric energy to see what kind of data we are actually dealing with.
+
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+boxplot(energy~playlist_genre, data = spotify_songs, main = "Energy VS Genre", xlab = "Energies", ylab = "Genres", col = "red", border = "black", horizontal = TRUE, notch = TRUE)
+```
+
+As we can see Electronic Dance Music is the genre with the maximum energy
+
+
+# Removing data from other genres other than pop and other redundant data
+
+After all this analysis we will remove duplicate data to prevent overlapping between redundant data-points(in case of plotting scatter plots) ( eg:same song names that occur more than once linked to different playlists)
+
+
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+spotify_songs<-spotify_songs[!duplicated(spotify_songs$track_name),]
+spotify_songs<-spotify_songs[!duplicated(spotify_songs$track_popularity),]
+summary(spotify_songs)
+```
+As we can see the data has significantly reduced to only 99 songs and their details. We now not only have songs from only one genre(POP), but we also have songs with different popularity indexes that will prevent points from overlapping and will make better visualisations. 
+
+We will also be removing columns such as Track_id, Playlist_id, Album_id and Playlist_subgenre because they have no use in our dataset
+
+```{r echo=FALSE,message=FALSE,warning=FALSE}
+library(dplyr)
+spotify_songs<-spotify_songs %>% select(-c(track_album_id,track_id,playlist_id,playlist_subgenre))
+summary(spotify_songs)
+```
+
+### Description of the initial questions 
+
+The following are some of the questions that can be formed about the dataset initially
+
+# Task 1
+
+Q1) Examine the dataset. According to the dataset how does danceability and Track_Popularity compare to each other? Would it be safe to assume that the most danceable song is also the most popular?
+
+![DANCEABILITY VS TRACK_POPULARITY ](""C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\DANCEABILITY VS TRACK_POPULARITY.png"")
+
+As we can see the tracks in the rectangle are not only some of the most popular but also the most danceable.
+We can analyse this data and infer from it that to make the most popular songs we need to put some emphasis on the danceability factor. 
+
+We can also make our visualisations interactive using plotly library and put our cursor at any data point which will in turn tell us the danceability and the track_popularity of that datapoint which can be shown below
+![DANCEABILITY VS TRACK_POPULARITY(INTERACTIVE)](""C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\DANCEABILITY VS TRACK_POPULARITY_visualized.png"")
+
+
+# Task 2
+
+Q2)Group the tracks according to the keys. Which key is the favourite for artists to make their pop songs?
+![TRACKS VS KEYS](""C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\TRACKS VS KEYS.png"")
+
+As we can see in this bar_graph it is therefore the #7 key which is the G key which is used up the most by the artists to make the songs. The bar graph here gives us the detailed analysis on how many songs use which key and by seeing the count we can make an affirmative inference on which is the most used key.
+
+
+# Task 3
+
+Q3)Define an arbitrary music metric called OPTIMAL FIGURE which can be defined as the following expression:
+
+OPTIMALFIG=DANCEABILITY+ENERGY+SPEEECHINESS+VALENCE+TEMPO-LOUDNESS-LIVENESS. 
+How does the track_popularity vary with the optimal figure.Are there any artists that are popular and have a complete song(high optimal figure.)"
+
+A:First we need to make sure that we define an optimal figure column and put it in our dataset using the mutate function of the dplyr library.
+![r command for mutation of new colum of Optimal FIG](""C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\of.png"")
+We see a new column in the dataset defined as the optimal figure for every track
+![Optimal FIG added ](""C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\of(1).png"")
+
+![BAR GRAPH SHOWING track_pop and OF]("C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\OPTIMAL_FIGURE(1)_visual")
+
+
+
+![Plot showing Track_popularity and Optimal Figure]("C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\OPTIMAL_FIGURE")
+As we can see Juice WRLD with the Track_popularity of 92 and Optimal_Figure of 180.6 makes the cut and he has the complete song.
+
+# Task 4
+
+Q: What is the energy distribution of the songs?
+
+
+![ENERGY DISTRIBUTION]("C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\energy.png")
+
+From this it would be safe to infer that Spotify users like to listen to energetic tracks rather than those that are laid back and chilled.
+
+
+# Refining the data and posing some questions 
+
+After answering some basic questions on our dataset we can refine a subset of the data and pose some questions on the same
+
+Q.Suppose we have to refine the data of only the top4 artists in the data based on their popularity index and talk about their energy and danceability values and decide which is the perfect artist based on that
+
+A: We will put the dataset into a dataframe and subset only those artists that have a track_popularity that is greater than 94.After that we will use the select() to subset the danceability, energy and artist_name columns from our dataset which will act as an input for the data for our ggplot.
+
+![R CODE]("C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\CODE_1.png") 
+![TOP4 ARTISTS-DANCEABILITY VS ENERGY]("C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\top4artists_ggplot(1).png") 
+After plotting in ggplot here is what we get. We see that "KAROLG" is the artist with the most linear behaviour but we can also see that "billie Eilish" has two songs in the top4 which could make her the most popular artist out of them all purely based on numbers. 
+
+Q:Are any data columns dependent on the track_popularity? Is there muticollinearity?
+
+![CORRPLOT SHOWING DEPENDENCE]("C:\Users\kriti\OneDrive\Desktop\VISUALIZATIONS\corrplot.png")
+
+After taking a look at the correleation matrix plot below it is right to admit that there is no major dependenices between track_popularity. However we can see certain dependencies between columns that are closely related to each other such as Loudness and Energy
+
+
